@@ -1,9 +1,10 @@
-local path_params_mgr = require "kong.plugins.api-param-limit.path_params"
 local _M = {}
 
-local validation = require "resty.validation"
-local cjson = require "cjson"
-local jsonschema = require 'jsonschema'
+local path_params_mgr = require "kong.plugins.api-param-limit.path_params"
+
+--local validation = require "resty.validation"
+--local cjson = require "cjson"
+--local jsonschema = require 'jsonschema'
 
 local function mysplit (inputstr, sep)
     if sep == nil then
@@ -16,7 +17,7 @@ local function mysplit (inputstr, sep)
     return t
 end
 
-local function set_default(location, name, default) do
+local function set_default(location, name, default)
     kv = {}
     kv.name = default
     if location == "query" then
@@ -58,16 +59,14 @@ local function check(limit, result, param_value, param_name)
     kong.log.debug("[api-param-limit] check param "..param_name.." type")
     if param_type then
         if not empty and type == "string" then
-            local ok, e = validation.string(param_value)
-            if ok == false then
-                kong.log.debug("[api-param-limit] check param "..param_name.." fail, must be string")
+            if type(param_value) ~= "string" then
+                kong.log.debug("[api-param-limit] check param "..param_name.." fail, ".."type "..type(param_value).."must be string")
                 table.insert(result, param_name .. "must be string")
             end
         end
         if not empty and type == "number" then
-            local ok, e = validation.number(tonumber(param_value))
-            if ok == false then
-                kong.log.debug("[api-param-limit] check param "..param_name.." fail, must be number")
+            if type(param_value) ~= "number" then
+                kong.log.debug("[api-param-limit] check param "..param_name.." fail, ".."type "..type(param_value).."must be number")
                 table.insert(result, param_name .. " must be number")
             end
         end
@@ -76,8 +75,7 @@ local function check(limit, result, param_value, param_name)
     kong.log.debug("[api-param-limit] check param "..param_name.." min value")
     if param_min then
         if not empty and type == "number" then
-            local ok, e = validation.optional:min(param_min)(tonumber(param_value))
-            if ok == false then
+            if tonumber(param_value)<tonumber(param_min) then
                 kong.log.debug("[api-param-limit] check param "..param_name.." fail, must >= "..tostring(param_min))
                 table.insert(result, param_name .. " must >= " .. tostring(param_min))
             end
@@ -85,8 +83,7 @@ local function check(limit, result, param_value, param_name)
     end
     if param_max then
         if not empty and type == "number" then
-            local ok, e = validation.optional:max(param_max)(tonumber(param_value))
-            if ok == false then
+            if tonumber(param_value)>tonumber(param_max) then
                 kong.log.debug("[api-param-limit] check param "..param_name.." fail, must <= "..tostring(param_max))
                 table.insert(result, param_name .. " must <= " .. tostring(param_max))
             end

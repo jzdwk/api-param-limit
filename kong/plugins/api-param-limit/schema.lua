@@ -11,8 +11,19 @@ local PARAM_TYPE = {
 
 local param_limits = {
   type = "array",
-  require = true,
-  elements = limit_conf,
+  required = true,
+  elements = {
+    type = "record",
+    fields = {
+   { name = { type = "string", required = true}},
+   { location = { type = "string", required = true, one_of = LOCATION }},
+   { required = { type = "boolean", required = false, default = false}},
+   { default = {type = "string", required = false}},
+   { type = {type = "string", required = true, one_of = PARAM_TYPE}},
+   { max = {type = "number", required = false}},
+   { min = {type = "number", required = false}}
+  } 
+ },
 }
 
 local api_fr_path_params = {
@@ -22,15 +33,15 @@ local api_fr_path_params = {
 }
 
 local limit_conf = {
-  type = "record"
+  type = "record",
   fields = {
    { name = { type = "string", required = true}},
-   { location = { type = "string", required = true, one_of = LOCATION}},
-   { required = {type = "boolean", required = false, default = false}},
+   { location = { type = "string", required = true, one_of = LOCATION }},
+   { required = { type = "boolean", required = false, default = false}},
    { default = {type = "string", required = false}},
    { type = {type = "string", required = true, one_of = PARAM_TYPE}},
    { max = {type = "number", required = false}},
-   { min = {type = "number", required = false}},
+   { min = {type = "number", required = false}}
  } 
 }
 --[[
@@ -63,15 +74,14 @@ return {
   fields = {
     -- only valid in route
     { consumer = typedefs.no_consumer },
-    { service = typedefs.no_service   }，
+    { service = typedefs.no_service   },
     {
       config = {
         type = "record",
         fields = {
-          { api_fr_path = { type = "string"} },
+          { api_fr_path = { type = "string"}, },
           { api_fr_params = api_fr_path_params },
-          { param_limits = param_limits }
-          }
+          { param_limits = param_limits },
         }
       }
     }
