@@ -52,7 +52,7 @@ GET /anything/{id}/info?a=x&c=x
 1. a的值为数字类型，范围[1,10]，必填
 2. b的值为string,在请求头,必填
 3. c为非必填参数，默认值为10，数字类型
-4. id的值为num
+4. id的值为数字类型
 
 则对应于`api-param-limit`插件，其定义为：
 ```json
@@ -88,7 +88,7 @@ GET /anything/{id}/info?a=x&c=x
                 "location": "path",
                 "required": true,
                 "default": "11",
-                "type": "string"
+                "type": "number"
             }
         ]
     }, 
