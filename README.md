@@ -18,18 +18,23 @@ api-param-limit
 
 ## 使用说明
 
+插件依赖了[lua-resty-validation](https://github.com/bungle/lua-resty-validation) 组件，所以首先使用`luarocks`安装：
+```shell
+$ luarocks install lua-resty-validation
+```
+
 该插件主要应用于kong route对象，支持http/https协议。kong插件配置说明：
 
 ```
 config.api_fr_path kong代理的api请求路径，path中可携带参数，比如/get/{id}/info
 config.api_fr_params  kong代理的api中，在path上的请求参数组成的列表，比如/get/{id2}/info/{name},即为id2,name
 config.param_limits[].name api参数名称
-config.param_limits[].location api参数位置
-config.param_limits[].required 参数是否必填
+config.param_limits[].location api参数位置, 取值范围:path,query,head
+config.param_limits[].required 参数是否必填,bool型，true/false
 config.param_limits[].default 默认值
-config.param_limits[].type 参数类型
-config.param_limits[].max 参数最大值（应用与数字类型）
-config.param_limits[].min 参数最小值（应用与数字类型）
+config.param_limits[].type 参数类型,取值：number/string
+config.param_limits[].max 参数最大值（应用于数字类型）
+config.param_limits[].min 参数最小值（应用于数字类型）
 
 ```
 
@@ -63,7 +68,7 @@ GET /anything/{id}/info?a=x&c=x
                 "required": true,
                 "type": "number",
                 "max": 10,
-                "min": 10
+                "min": 1
             },
             {
                 "name": "b",
@@ -89,6 +94,19 @@ GET /anything/{id}/info?a=x&c=x
     }, 
     "enabled": true
 }
+```
+此时，当请求参数不符合limit约束，则返回相应信息：
+
+```shell
+root@root# curl -GET -i http://{kong_url}/anything/aa/info?a=100
+HTTP/1.1 400 Bad Request
+Date: Wed, 25 Nov 2020 08:03:52 GMT
+Content-Type: application/json; charset=utf-8
+Connection: keep-alive
+Content-Length: 28
+X-Kong-Response-Latency: 3
+Server: kong/2.2.0
+{"message":["a must <= 10"]}
 ```
 
 
