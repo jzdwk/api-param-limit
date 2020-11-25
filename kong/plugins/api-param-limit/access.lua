@@ -16,10 +16,16 @@ local function mysplit (inputstr, sep)
     return t
 end
 
-local function set_default(location, name, param_type, default)
+local function set_default(result, location, name, param_type, default)
     kong.log.debug("[api-param-limit] set default value to  param [ name:"..name.." , default value:"..default.."]")
     local param_default = default
     if param_type == "number" then 
+        local ok, e = validation.number(tonumber(param_default))
+        if ok == false then
+            kong.log.debug("[api-param-limit] check param "..name.." fail, ".."type must be number")
+            table.insert(result, name .. "'s default value must be number")
+            return
+        end
         param_default = tonumber(param_default)
     end
     if location == "query" then
@@ -55,7 +61,7 @@ local function check(limit, result, param_value, param_name)
         if empty then
             if param_default then
                 kong.log.debug("[api-param-limit] param "..param_name.." is required, but is empty, set default value "..param_default)
-                set_default(param_location, param_name, param_type, param_default)
+                set_default(result, param_location, param_name, param_type, param_default)
             else
                 kong.log.debug("[api-param-limit] param "..param_name.." is required, but is empty")
                 table.insert(result, param_name .. " is required, but is empty and doesn't have default value")
